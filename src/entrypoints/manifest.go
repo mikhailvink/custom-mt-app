@@ -36,7 +36,7 @@ func ManifestHandler(appUrl string) func(w http.ResponseWriter, _ *http.Request)
 		var manifest = Manifest{
 			Identifier: "grazie-mt",
 			Name:       "Crazie machine translation",
-			Logo:       "/assets/img/logo.png",
+			Logo:       "/logo.svg",
 			BaseUrl:    appUrl,
 			Authentication: Authentication{
 				Type:     "none",
@@ -51,9 +51,9 @@ func ManifestHandler(appUrl string) func(w http.ResponseWriter, _ *http.Request)
 					{
 						Key:         "grazie-mt",
 						Name:        "Crazie mt",
-						Icon:        "/logo.png",
+						Icon:        "/logo.svg",
 						Description: "",
-						Logo:        "/assets/img/logo.png",
+						Logo:        "/logo.svg",
 						Url:         "/translate",
 					},
 				},

@@ -17,6 +17,7 @@ func main() {
 	r.HandleFunc("/manifest.json", entrypoints.ManifestHandler(appUrl)).Methods(http.MethodGet)
 	r.HandleFunc("/installed", entrypoints.InstalledHandler).Methods(http.MethodPost)
 	r.HandleFunc("/translate/", entrypoints.TranslateHandler(grazie)).Methods(http.MethodPost)
+	r.PathPrefix("/logo.svg").Handler(http.FileServer(http.Dir("static")))
 	log.Fatal(http.ListenAndServe(":8080", logRequest(r)))
 }
 
