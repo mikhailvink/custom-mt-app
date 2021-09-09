@@ -31,38 +31,40 @@ type ModuleDeclaration struct {
 	Url         string `json:"url"`
 }
 
-func ManifestHandler(w http.ResponseWriter, _ *http.Request) {
-	var manifest = Manifest{
-		Identifier: "custom-mt",
-		Name:       "Custom mt",
-		Logo:       "/assets/img/logo.png",
-		BaseUrl:    "keys.baseUrl", // TODO: get real url
-		Authentication: Authentication{
-			Type:     "authorization_code",
-			ClientId: "keys.crowdinClientId", // TODO: get real client id
-		},
-		Events: map[string]string{
-			"installed": "/installed",
-		},
-		Scopes: []string{"project"},
-		Modules: map[string][]ModuleDeclaration{
-			"custom-mt": {
-				{
-					Key:         "custom-mt",
-					Name:        "Custom mt",
-					Icon:        "/logo.png",
-					Description: "",
-					Logo:        "/assets/img/logo.png",
-					Url:         "/",
+func ManifestHandler(appUrl string) func(w http.ResponseWriter, _ *http.Request) {
+	return func(w http.ResponseWriter, _ *http.Request) {
+		var manifest = Manifest{
+			Identifier: "grazie-mt",
+			Name:       "Crazie machine translation",
+			Logo:       "/assets/img/logo.png",
+			BaseUrl:    appUrl,
+			Authentication: Authentication{
+				Type:     "none",
+				ClientId: "",
+			},
+			Events: map[string]string{
+				"installed": "/installed",
+			},
+			Scopes: []string{"project"},
+			Modules: map[string][]ModuleDeclaration{
+				"custom-mt": {
+					{
+						Key:         "grazie-mt",
+						Name:        "Crazie mt",
+						Icon:        "/logo.png",
+						Description: "",
+						Logo:        "/assets/img/logo.png",
+						Url:         "/translate",
+					},
 				},
 			},
-		},
-	}
-	s, err := json.Marshal(manifest)
-	if err != nil {
-		httpErrorAndLog(w, fmt.Errorf("error marshalling manifest: %v", err), http.StatusInternalServerError)
-		return
-	}
+		}
+		s, err := json.Marshal(manifest)
+		if err != nil {
+			httpErrorAndLog(w, fmt.Errorf("error marshalling manifest: %v", err), http.StatusInternalServerError)
+			return
+		}
 
-	httpSuccess(w, s)
+		httpSuccess(w, s)
+	}
 }
