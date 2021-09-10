@@ -8,7 +8,8 @@ import (
 
 const (
 	EnvGrazieToken = "GRAZIE_TOKEN"
-	AppUrl         = "APP_URL"
+	ClientId       = "CLIENT_ID"
+	ClientSecret   = "CLIENT_SECRET"
 )
 
 func MustGetEnv(varname string) string {

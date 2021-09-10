@@ -31,16 +31,16 @@ type ModuleDeclaration struct {
 	Url         string `json:"url"`
 }
 
-func ManifestHandler(appUrl string) func(w http.ResponseWriter, _ *http.Request) {
-	return func(w http.ResponseWriter, _ *http.Request) {
+func ManifestHandler(clientId string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		var manifest = Manifest{
 			Identifier: "grazie-mt",
 			Name:       "Crazie machine translation",
-			Logo:       "/logo.svg",
-			BaseUrl:    appUrl,
+			Logo:       "/assets/logo.svg",
+			BaseUrl:    "https://" + r.Host,
 			Authentication: Authentication{
-				Type:     "none",
-				ClientId: "",
+				Type:     "authorization_code",
+				ClientId: clientId,
 			},
 			Events: map[string]string{
 				"installed": "/installed",
@@ -51,9 +51,9 @@ func ManifestHandler(appUrl string) func(w http.ResponseWriter, _ *http.Request)
 					{
 						Key:         "grazie-mt",
 						Name:        "Crazie mt",
-						Icon:        "/logo.svg",
+						Icon:        "/assets/logo.svg",
 						Description: "",
-						Logo:        "/logo.svg",
+						Logo:        "/assets/logo.svg",
 						Url:         "/translate",
 					},
 				},
