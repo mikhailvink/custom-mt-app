@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ app_name }}
+  labels:
+    app: {{ app_name }}
+spec:
+  selector:
+    app: {{ app_name }}
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080

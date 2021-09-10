@@ -1,0 +1,22 @@
+---
+common:
+  app_name: crowdin-grazie
+  app_port: 8080
+
+  replicas_count: 1
+  image_path: registry.jetbrains.team/p/mau/crowdin-integrations/crowdin-grazie
+  image_version: "{{ env='IMAGE_VERSION' }}"
+
+  grazie_token: "{{ env='GRAZIE_TOKEN' }}"
+  client_id: "{{ env='CLIENT_ID' }}"
+  client_secret: "{{ env='CLIENT_SECRET' }}"
+
+  templates:
+    - template: ingress.yaml.j2
+    - template: deployment.yaml.j2
+    - template: service.yaml.j2
+
+production:
+  k8s_namespace: marketing-automation
+  host: crowdin-grazie-mt.europe-north1-gke.intellij.net
+

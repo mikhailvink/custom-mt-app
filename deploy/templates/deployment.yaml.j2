@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ app_name }}
+spec:
+  replicas: {{ replicas_count }}
+  revisionHistoryLimit: {{ revision_history_limit | default('3') }}
+  selector:
+    matchLabels:
+      app: {{ app_name }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: {{ max_unavailable | default('0') }}
+      maxSurge: {{ max_surge | default('1') }}
+  template:
+    metadata:
+      labels:
+        app: {{ app_name }}
+    spec:
+      terminationGracePeriodSeconds: {{ termination_grace_period_seconds | default('60') }}
+      imagePullSecrets:
+      - name: docker-jetbrains-team
+      containers:
+      - name: {{ app_name }}
+        image: {{ image_path }}:{{ image_version }}
+        ports:
+        - containerPort: {{ app_port }}
+        env:
+          - name: GRAZIE_TOKEN
+            value: "{{ grazie_token }}"
+          - name: CLIENT_ID
+            value: "{{ client_id }}"
+          - name: CLIENT_SECRET
+            value: "{{ client_secret }}"
+        readinessProbe:
+          httpGet:
+            path: /manifest.json
+            port: {{ app_port }}
+          initialDelaySeconds: 5
+          timeoutSeconds: 30
