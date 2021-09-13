@@ -41,11 +41,9 @@ func (c HttpClient) Request(method, url string, body io.Reader) (*http.Response,
 		return nil, err
 	}
 
-	if len(c.preprocess) > 0 {
-		for _, fn := range c.preprocess {
-			c.debug("Calling preprocess func...")
-			fn(req)
-		}
+	for _, fn := range c.preprocess {
+		c.debug("Calling preprocess func...")
+		fn(req)
 	}
 
 	c.debug("request headers: %v", req.Header)

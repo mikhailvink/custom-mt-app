@@ -25,13 +25,9 @@ spec:
         image: {{ image_path }}:{{ image_version }}
         ports:
         - containerPort: {{ app_port }}
-        env:
-          - name: GRAZIE_TOKEN
-            value: "{{ grazie_token }}"
-          - name: CLIENT_ID
-            value: "{{ client_id }}"
-          - name: CLIENT_SECRET
-            value: "{{ client_secret }}"
+        envFrom:
+        - secretRef:
+            name: "app_secrets"
         readinessProbe:
           httpGet:
             path: /manifest.json
