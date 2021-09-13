@@ -37,8 +37,13 @@ func TranslateHandler(grazieInstance grazie.Grazie, clientSecret string) func(w 
 			return []byte(clientSecret), nil
 		})
 
+		if err != nil {
+			httpErrorAndLog(w, fmt.Errorf("failed to parse JWT token"), http.StatusBadRequest)
+			return
+		}
 		if !parsedToken.Valid {
 			httpErrorAndLog(w, fmt.Errorf("invalid JWT token"), http.StatusBadRequest)
+			return
 		}
 
 		respBody, _ := ioutil.ReadAll(r.Body)
