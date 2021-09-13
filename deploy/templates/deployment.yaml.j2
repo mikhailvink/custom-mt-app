@@ -27,7 +27,7 @@ spec:
         - containerPort: {{ app_port }}
         envFrom:
         - secretRef:
-            name: "app_secrets"
+            name: "custom-mt-app-secret-prod"
         readinessProbe:
           httpGet:
             path: /manifest.json
