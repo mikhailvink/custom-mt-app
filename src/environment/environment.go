@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	GrazieHost     = "GRAZIE_HOST"
 	EnvGrazieToken = "GRAZIE_TOKEN"
 	ClientId       = "CLIENT_ID"
 	ClientSecret   = "CLIENT_SECRET"
