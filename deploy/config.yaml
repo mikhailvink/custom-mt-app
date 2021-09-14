@@ -9,7 +9,7 @@ common:
 
   replicas_count: 1
   image_path: registry.jetbrains.team/p/mau/crowdin-integrations/crowdin-grazie
-  image_version: "{{ env='IMAGE_VERSION' }}"
+  image_version: "{{ env='IMAGE_TAG' }}"
 
   grazie_token: "{{ env='GRAZIE_TOKEN' }}"
   client_id: "{{ env='CLIENT_ID' }}"

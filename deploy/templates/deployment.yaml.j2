@@ -22,7 +22,7 @@ spec:
       - name: docker-jetbrains-team
       containers:
       - name: {{ app_name }}
-        image: {{ image_path }}:{{ image_version }}
+        image: "{{ image_path }}:{{ image_version }}"
         ports:
         - containerPort: {{ app_port }}
         envFrom:
