@@ -1,4 +1,4 @@
-FROM golang:1.16-alpine as build
+FROM golang:1.17-alpine as build
 
 LABEL description="Image of mau/crowdin-custom-mt-app" \
       maintainer="Semyon Atamas <semyon.atamas@jetbrains.com>" \
