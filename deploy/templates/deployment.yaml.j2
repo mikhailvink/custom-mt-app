@@ -30,7 +30,7 @@ spec:
             name: "custom-mt-app-secret-prod"
         readinessProbe:
           httpGet:
-            path: /manifest.json
+            path: /healthcheck
             port: {{ app_port }}
           initialDelaySeconds: 5
           timeoutSeconds: 30

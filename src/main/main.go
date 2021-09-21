@@ -18,6 +18,7 @@ func main() {
 	var clientSecret = environment.MustGetEnv(environment.ClientSecret)
 
 	r := mux.NewRouter()
+	r.HandleFunc("/healthcheck", func(_ http.ResponseWriter, _ *http.Request) {}).Methods(http.MethodGet)
 	r.HandleFunc("/manifest.json", entrypoints.ManifestHandler(clientId)).Methods(http.MethodGet)
 	r.HandleFunc("/installed", entrypoints.InstalledHandler).Methods(http.MethodPost)
 	r.HandleFunc("/translate/", entrypoints.TranslateHandler(grazieInstance, clientSecret)).Methods(http.MethodPost)
