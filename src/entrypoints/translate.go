@@ -26,7 +26,7 @@ func TranslateHandler(grazieInstance grazie.Grazie, clientSecret string) func(w 
 	return func(w http.ResponseWriter, r *http.Request) {
 		var err error
 
-		token := r.URL.Query().Get("jwt[token]")
+		token := r.URL.Query().Get("jwtToken")
 		parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 			// Don't forget to validate the alg is what you expect:
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
