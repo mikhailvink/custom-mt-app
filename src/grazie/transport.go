@@ -9,7 +9,7 @@ import (
 	"net/url"
 )
 
-const _grazieHost = "prod.nmt.grazie.iml.aws.intellij.net"
+const _grazieHost = "l9.nmt.trf.prod.grazie.aws.intellij.net"
 const _apiUrlPrefix = "/service/v3"
 
 type transport struct {
