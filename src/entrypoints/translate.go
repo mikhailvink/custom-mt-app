@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/sirupsen/logrus"
@@ -76,9 +77,16 @@ func (hc *HandlerCreator) TranslateHandler(grazieInstance grazie.Grazie, clientS
 		var target = r.URL.Query().Get("target")
 		translateResponse, err := grazieInstance.Translate(grazie.TranslateRequest{Texts: requestBody.Strings, ToLang: target})
 		if err != nil {
-			logEntry.WithError(err).Error("error translating")
-			hc.httpErrorAndLog(w, fmt.Errorf("error translating: %v", err), http.StatusInternalServerError)
-			return
+			// return requested strings in case of unsupported language
+			if strings.Contains(err.Error(), "412 Precondition Failed") {
+				translateResponse = &grazie.TranslateResponse{
+					Translations: requestBody.Strings,
+				}
+			} else {
+				logEntry.WithError(err).Error("error translating")
+				hc.httpErrorAndLog(w, fmt.Errorf("error translating: %v", err), http.StatusInternalServerError)
+				return
+			}
 		}
 
 		resp := response{
