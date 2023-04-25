@@ -61,6 +61,8 @@ func (hc *HandlerCreator) TranslateHandler(grazieInstance grazie.Grazie, clientS
 			return
 		}
 
+		logEntry = logEntry.WithField("request_body", string(reqBody))
+
 		var requestBody = request{}
 		err = json.NewDecoder(bytes.NewReader(reqBody)).Decode(&requestBody)
 		if err != nil {
