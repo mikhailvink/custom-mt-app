@@ -1,5 +1,5 @@
 kind: Ingress
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 metadata:
   name: {{ app_name }}
   labels:
@@ -20,6 +20,9 @@ spec:
       http:
         paths:
           - backend:
-              serviceName: {{ app_name }}
-              servicePort: 8080
+              service:
+                name: {{ app_name }}
+                port:
+                  number: 8080
             path: /
+            pathType: ImplementationSpecific

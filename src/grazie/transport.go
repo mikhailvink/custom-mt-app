@@ -9,7 +9,6 @@ import (
 	"net/url"
 )
 
-const _grazieHost = "l9.nmt.trf.prod.grazie.aws.intellij.net"
 const _apiUrlPrefix = "/service/v3"
 
 type transport struct {
@@ -47,13 +46,7 @@ func (t transport) Translate(request TranslateRequest) (*TranslateResponse, erro
 }
 
 func (t transport) apiUrl(urlPart string) (*url.URL, error) {
-	var host string
-	if t.host != "" {
-		host = t.host
-	} else {
-		host = _grazieHost
-	}
-	return url.Parse("https://" + host + _apiUrlPrefix + urlPart)
+	return url.Parse("https://" + t.host + _apiUrlPrefix + urlPart)
 }
 
 type TranslateRequest struct {

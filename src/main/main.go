@@ -1,28 +1,39 @@
 package main
 
 import (
-	"crowdin-grazie/entrypoints"
-	"crowdin-grazie/environment"
-	"crowdin-grazie/grazie"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"os"
+
+	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
+
+	"crowdin-grazie/config"
+	"crowdin-grazie/entrypoints"
+	"crowdin-grazie/grazie"
+	"crowdin-grazie/slack"
 )
 
 func main() {
-	var grazieInstance = grazie.New(environment.MustGetEnv(environment.EnvGrazieToken), grazie.Config{
-		Host: os.Getenv(environment.GrazieHost),
+	cfg, err := config.Parse()
+	if err != nil {
+		logrus.WithError(err).Fatal("cannot get config")
+	}
+
+	var grazieInstance = grazie.New(cfg.GrazieToken, grazie.Config{
+		Host: cfg.GrazieHost,
 	})
-	var clientId = environment.MustGetEnv(environment.ClientId)
-	var clientSecret = environment.MustGetEnv(environment.ClientSecret)
+
+	slackClient := slack.New(cfg)
+	hc := entrypoints.NewHandlerCreator(slackClient)
 
 	r := mux.NewRouter()
 	r.HandleFunc("/healthcheck", func(_ http.ResponseWriter, _ *http.Request) {}).Methods(http.MethodGet)
-	r.HandleFunc("/manifest.json", entrypoints.ManifestHandler(clientId)).Methods(http.MethodGet)
-	r.HandleFunc("/installed", entrypoints.InstalledHandler).Methods(http.MethodPost)
-	r.HandleFunc("/translate/", entrypoints.TranslateHandler(grazieInstance, clientSecret)).Methods(http.MethodPost)
+	r.HandleFunc("/manifest.json", hc.ManifestHandler(cfg.ClientID)).Methods(http.MethodGet)
+	r.HandleFunc("/installed", hc.InstalledHandler).Methods(http.MethodPost)
+	r.HandleFunc("/translate/", hc.TranslateHandler(grazieInstance, cfg.ClientSecret)).Methods(http.MethodPost)
 	r.PathPrefix("/assets").Handler(http.FileServer(http.Dir("static")))
+
+	logrus.Info("service starting..")
 	log.Fatal(http.ListenAndServe(":8080", logRequest(r)))
 }
 

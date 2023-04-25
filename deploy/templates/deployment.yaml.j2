@@ -25,6 +25,13 @@ spec:
         image: "{{ image_path }}:{{ image_version }}"
         ports:
         - containerPort: {{ app_port }}
+        env:
+        - name: GRAZIE_HOST
+          value: "{{ grazie_host }}"
+        - name: CLIENT_ID
+          value: "{{ client_id }}"
+        - name: SLACK_ALERTS_CHANNEL_ID
+          value: "{{ slack_alerts_channel_id }}"
         envFrom:
         - secretRef:
             name: "custom-mt-app-secret-prod"

@@ -2,12 +2,15 @@ package entrypoints
 
 import (
 	"bytes"
-	"crowdin-grazie/grazie"
 	"encoding/json"
 	"fmt"
-	"github.com/golang-jwt/jwt/v4"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/sirupsen/logrus"
+
+	"crowdin-grazie/grazie"
 )
 
 type request struct {
@@ -22,9 +25,12 @@ type responseData struct {
 	Translations []string `json:"translations"`
 }
 
-func TranslateHandler(grazieInstance grazie.Grazie, clientSecret string) func(w http.ResponseWriter, r *http.Request) {
+func (hc *HandlerCreator) TranslateHandler(grazieInstance grazie.Grazie, clientSecret string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var err error
+
+		query := r.URL.Query()
+		logEntry := logrus.WithField("query", query)
 
 		token := r.URL.Query().Get("jwtToken")
 		parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
@@ -38,39 +44,52 @@ func TranslateHandler(grazieInstance grazie.Grazie, clientSecret string) func(w 
 		})
 
 		if err != nil {
-			httpErrorAndLog(w, fmt.Errorf("failed to parse JWT: %v", err), http.StatusBadRequest)
+			logEntry.WithError(err).Error("failed to parse JWT")
+			hc.httpErrorAndLog(w, fmt.Errorf("failed to parse JWT: %v", err), http.StatusBadRequest)
 			return
 		}
 		if !parsedToken.Valid {
-			httpErrorAndLog(w, fmt.Errorf("invalid JWT token"), http.StatusBadRequest)
+			logEntry.WithField("token", parsedToken).Error("invalid JWT token")
+			hc.httpErrorAndLog(w, fmt.Errorf("invalid JWT token"), http.StatusBadRequest)
 			return
 		}
 
-		respBody, _ := ioutil.ReadAll(r.Body)
+		reqBody, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			logEntry.Error("error reading body")
+			hc.httpErrorAndLog(w, fmt.Errorf("error reading body: %v", err), http.StatusBadRequest)
+			return
+		}
 
 		var requestBody = request{}
-		err = json.NewDecoder(bytes.NewReader(respBody)).Decode(&requestBody)
+		err = json.NewDecoder(bytes.NewReader(reqBody)).Decode(&requestBody)
 		if err != nil {
-			httpErrorAndLog(w, fmt.Errorf("error parsing request body: %v", err), http.StatusBadRequest)
+			logEntry.WithField("body", string(reqBody)).Error("error parsing request body")
+			hc.httpErrorAndLog(w, fmt.Errorf("error parsing request body: %v", err), http.StatusBadRequest)
 			return
 		}
+
+		logEntry = logEntry.WithField("request", requestBody)
 
 		var target = r.URL.Query().Get("target")
 		translateResponse, err := grazieInstance.Translate(grazie.TranslateRequest{Texts: requestBody.Strings, ToLang: target})
 		if err != nil {
-			httpErrorAndLog(w, fmt.Errorf("error translating: %v", err), http.StatusInternalServerError)
+			logEntry.WithError(err).Error("error translating")
+			hc.httpErrorAndLog(w, fmt.Errorf("error translating: %v", err), http.StatusInternalServerError)
 			return
 		}
 
-		marshalledResponse, err := json.Marshal(response{
+		resp := response{
 			Data: responseData{
 				Translations: translateResponse.Translations,
 			},
-		})
+		}
+		marshalledResponse, err := json.Marshal(resp)
 		if err != nil {
-			httpErrorAndLog(w, fmt.Errorf("error marshalling response: %v", err), http.StatusInternalServerError)
+			logEntry.WithField("response", resp).WithError(err).Error("error marshalling response")
+			hc.httpErrorAndLog(w, fmt.Errorf("error marshalling response: %v", err), http.StatusInternalServerError)
 			return
 		}
-		httpSuccess(w, marshalledResponse)
+		hc.httpSuccess(w, marshalledResponse)
 	}
 }

@@ -31,7 +31,7 @@ type ModuleDeclaration struct {
 	Url         string `json:"url"`
 }
 
-func ManifestHandler(clientId string) func(w http.ResponseWriter, r *http.Request) {
+func (hc *HandlerCreator) ManifestHandler(clientId string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var manifest = Manifest{
 			Identifier: "grazie-mt",
@@ -61,10 +61,10 @@ func ManifestHandler(clientId string) func(w http.ResponseWriter, r *http.Reques
 		}
 		s, err := json.Marshal(manifest)
 		if err != nil {
-			httpErrorAndLog(w, fmt.Errorf("error marshalling manifest: %v", err), http.StatusInternalServerError)
+			hc.httpErrorAndLog(w, fmt.Errorf("error marshalling manifest: %v", err), http.StatusInternalServerError)
 			return
 		}
 
-		httpSuccess(w, s)
+		hc.httpSuccess(w, s)
 	}
 }

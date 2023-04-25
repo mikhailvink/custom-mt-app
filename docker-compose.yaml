@@ -1,11 +1,8 @@
 version: '3'
 services:
-  zdchint:
+  crowdin_grazie_mt:
     build:
       context: .
     ports:
       - "8080:8080"
-    image: registry.jetbrains.team/mau/crowdin-grazie:${IMAGE_TAG:-latest}
-    environment:
-      - GRAZIE_TOKEN=${GRAZIE_TOKEN}
-      - APP_URL=${APP_URL}
+    image: registry.jetbrains.team/p/mau/crowdin-integrations/crowdin-grazie:${IMAGE_TAG:-latest}
