@@ -1,6 +1,12 @@
+# git.jetbrains.team/mau/grazie-ml-go-client.git v1.0.3
+## explicit; go 1.18
+git.jetbrains.team/mau/grazie-ml-go-client.git
 # github.com/golang-jwt/jwt/v4 v4.0.0
 ## explicit; go 1.15
 github.com/golang-jwt/jwt/v4
+# github.com/golang/mock v1.6.0
+## explicit; go 1.11
+github.com/golang/mock/gomock
 # github.com/gorilla/mux v1.7.0
 ## explicit
 github.com/gorilla/mux
@@ -10,6 +16,9 @@ github.com/gorilla/websocket
 # github.com/kelseyhightower/envconfig v1.4.0
 ## explicit
 github.com/kelseyhightower/envconfig
+# github.com/pkg/errors v0.9.1
+## explicit
+github.com/pkg/errors
 # github.com/sirupsen/logrus v1.9.0
 ## explicit; go 1.13
 github.com/sirupsen/logrus

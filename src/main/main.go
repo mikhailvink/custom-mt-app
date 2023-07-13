@@ -9,8 +9,9 @@ import (
 
 	"crowdin-grazie/config"
 	"crowdin-grazie/entrypoints"
-	"crowdin-grazie/grazie"
 	"crowdin-grazie/slack"
+
+	graziego "git.jetbrains.team/mau/grazie-ml-go-client.git"
 )
 
 func main() {
@@ -19,9 +20,18 @@ func main() {
 		logrus.WithError(err).Fatal("cannot get config")
 	}
 
-	var grazieInstance = grazie.New(cfg.GrazieToken, grazie.Config{
-		Host: cfg.GrazieHost,
-	})
+	grazieMlClient, err := graziego.New(
+		cfg.GrazieHost,
+		graziego.AuthTypeService,
+		cfg.GrazieToken,
+		graziego.GrazieAgent{
+			Name:    "mau-crowdin-mt",
+			Version: cfg.GrazieVersion,
+		},
+	)
+	if err != nil {
+		logrus.WithError(err).Fatal("cannot create Grazie client")
+	}
 
 	slackClient := slack.New(cfg)
 	hc := entrypoints.NewHandlerCreator(slackClient)
@@ -30,7 +40,7 @@ func main() {
 	r.HandleFunc("/healthcheck", func(_ http.ResponseWriter, _ *http.Request) {}).Methods(http.MethodGet)
 	r.HandleFunc("/manifest.json", hc.ManifestHandler(cfg.ClientID)).Methods(http.MethodGet)
 	r.HandleFunc("/installed", hc.InstalledHandler).Methods(http.MethodPost)
-	r.HandleFunc("/translate/", hc.TranslateHandler(grazieInstance, cfg.ClientSecret)).Methods(http.MethodPost)
+	r.HandleFunc("/translate/", hc.TranslateHandler(grazieMlClient, cfg.ClientSecret)).Methods(http.MethodPost)
 	r.PathPrefix("/assets").Handler(http.FileServer(http.Dir("static")))
 
 	logrus.Info("service starting..")

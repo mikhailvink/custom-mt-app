@@ -8,14 +8,26 @@ import (
 	"net/http"
 	"strings"
 
+	graziego "git.jetbrains.team/mau/grazie-ml-go-client.git"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/sirupsen/logrus"
+)
 
-	"crowdin-grazie/grazie"
+var (
+	supportedLanguages = map[string]bool{
+		graziego.LangEN: true,
+		graziego.LangDE: true,
+		graziego.LangFR: true,
+		graziego.LangES: true,
+		graziego.LangRU: true,
+		graziego.LangKO: true,
+		graziego.LangZH: true,
+		graziego.LangJA: true,
+	}
 )
 
 type request struct {
-	Strings []string
+	Strings []string `json:"strings"`
 }
 
 type response struct {
@@ -26,7 +38,7 @@ type responseData struct {
 	Translations []string `json:"translations"`
 }
 
-func (hc *HandlerCreator) TranslateHandler(grazieInstance grazie.Grazie, clientSecret string) func(w http.ResponseWriter, r *http.Request) {
+func (hc *HandlerCreator) TranslateHandler(grazieMlClient graziego.Client, clientSecret string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var err error
 
@@ -74,24 +86,31 @@ func (hc *HandlerCreator) TranslateHandler(grazieInstance grazie.Grazie, clientS
 
 		logEntry = logEntry.WithField("request", requestBody)
 
-		var target = r.URL.Query().Get("target")
-		translateResponse, err := grazieInstance.Translate(grazie.TranslateRequest{Texts: requestBody.Strings, ToLang: target})
-		if err != nil {
-			// return requested strings in case of unsupported language
-			if strings.Contains(err.Error(), "412 Precondition Failed") {
-				translateResponse = &grazie.TranslateResponse{
-					Translations: requestBody.Strings,
-				}
-			} else {
+		var translations []string
+		target := getLang(query.Get("target"))
+		source := getLang(query.Get("source"))
+		if !supportedLanguages[target] || !supportedLanguages[source] {
+			logEntry.Error("unsupported language")
+			hc.slackClient.Error(fmt.Sprintf("unsupported language. Source: %s, target: %s", query.Get("source"), query.Get("target")))
+
+			translations = requestBody.Strings
+		} else {
+			translateResponse, err := grazieMlClient.Translate(r.Context(), source, target, requestBody.Strings)
+			if err != nil || translateResponse == nil {
 				logEntry.WithError(err).Error("error translating")
 				hc.httpErrorAndLog(w, fmt.Errorf("error translating: %v", err), http.StatusInternalServerError)
 				return
+			}
+
+			translations = make([]string, 0, len(translateResponse.Translations))
+			for _, t := range translateResponse.Translations {
+				translations = append(translations, t.Translation)
 			}
 		}
 
 		resp := response{
 			Data: responseData{
-				Translations: translateResponse.Translations,
+				Translations: translations,
 			},
 		}
 		marshalledResponse, err := json.Marshal(resp)
@@ -102,4 +121,8 @@ func (hc *HandlerCreator) TranslateHandler(grazieInstance grazie.Grazie, clientS
 		}
 		hc.httpSuccess(w, marshalledResponse)
 	}
+}
+
+func getLang(lang string) string {
+	return strings.ToLower(strings.Split(lang, "-")[0])
 }

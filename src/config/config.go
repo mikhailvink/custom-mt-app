@@ -5,8 +5,9 @@ import (
 )
 
 type Config struct {
-	GrazieHost  string `envconfig:"GRAZIE_HOST" required:"true"`
-	GrazieToken string `envconfig:"GRAZIE_TOKEN" required:"true"`
+	GrazieHost    string `envconfig:"GRAZIE_HOST" required:"true"`
+	GrazieToken   string `envconfig:"GRAZIE_TOKEN" required:"true"`
+	GrazieVersion string `envconfig:"GRAZIE_VERSION" required:"true"`
 
 	ClientID     string `envconfig:"CLIENT_ID" required:"true"`
 	ClientSecret string `envconfig:"CLIENT_SECRET" required:"true"`
