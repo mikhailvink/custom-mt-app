@@ -90,9 +90,6 @@ func (hc *HandlerCreator) TranslateHandler(grazieMlClient graziego.Client, clien
 		target := getLang(query.Get("target"))
 		source := getLang(query.Get("source"))
 		if !supportedLanguages[target] || !supportedLanguages[source] {
-			logEntry.Error("unsupported language")
-			hc.slackClient.Error(fmt.Sprintf("unsupported language. Source: %s, target: %s", query.Get("source"), query.Get("target")))
-
 			translations = requestBody.Strings
 		} else {
 			translateResponse, err := grazieMlClient.Translate(r.Context(), source, target, requestBody.Strings)
