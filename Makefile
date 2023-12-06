@@ -13,7 +13,11 @@ docker-image: image_tag_required
 
 .PHONY: deploy-prod
 deploy-prod: image_tag_required k8s_token_required
-	( cd deploy/k8s && k8s-handle deploy -s production --sync-mode --strict)
+	( cd deploy && k8s-handle deploy -s production --sync-mode --strict)
+
+.PHONY: destroy-prod
+destroy-prod: image_tag_required k8s_token_required
+	( cd deploy && k8s-handle destroy -s production --sync-mode --strict)
 
 .PHONY: all-direct
 all-prod: build docker-image deploy-prod
