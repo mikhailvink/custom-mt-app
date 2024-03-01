@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -49,13 +50,13 @@ func (c *client) Chat(ctx context.Context, profile string, messages []ChatMessag
 		return nil, errors.Wrap(err, "cannot complete chat messages")
 	}
 
-	response, err = parseResponse(response)
+	parsedResponse, err := parseChatResponse(response)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot parse response body")
 	}
 
 	return &ChatMessage{
 		Role: RoleAssistant,
-		Text: response,
+		Text: strings.Join(parsedResponse, ""),
 	}, nil
 }

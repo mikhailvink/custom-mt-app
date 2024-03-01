@@ -1,4 +1,4 @@
-# git.jetbrains.team/mau/grazie-ml-go-client.git v1.0.3
+# git.jetbrains.team/mau/grazie-ml-go-client.git v1.0.5
 ## explicit; go 1.18
 git.jetbrains.team/mau/grazie-ml-go-client.git
 # github.com/golang-jwt/jwt/v4 v4.0.0

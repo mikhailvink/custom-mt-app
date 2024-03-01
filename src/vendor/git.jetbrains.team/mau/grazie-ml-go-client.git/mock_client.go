@@ -50,25 +50,25 @@ func (mr *MockClientMockRecorder) Chat(ctx, profile, messages interface{}) *gomo
 }
 
 // QuestionAnswering mocks base method.
-func (m *MockClient) QuestionAnswering(ctx context.Context, llmProfile, dataSource, query string, docsSize int64) (*QuestionAnsweringResponse, error) {
+func (m *MockClient) QuestionAnswering(ctx context.Context, llmProfile, dataSource, query, context string, docsSize int64) (*QuestionAnsweringResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "QuestionAnswering", ctx, llmProfile, dataSource, query, docsSize)
+	ret := m.ctrl.Call(m, "QuestionAnswering", ctx, llmProfile, dataSource, query, context, docsSize)
 	ret0, _ := ret[0].(*QuestionAnsweringResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // QuestionAnswering indicates an expected call of QuestionAnswering.
-func (mr *MockClientMockRecorder) QuestionAnswering(ctx, llmProfile, dataSource, query, docsSize interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) QuestionAnswering(ctx, llmProfile, dataSource, query, context, docsSize interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuestionAnswering", reflect.TypeOf((*MockClient)(nil).QuestionAnswering), ctx, llmProfile, dataSource, query, docsSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuestionAnswering", reflect.TypeOf((*MockClient)(nil).QuestionAnswering), ctx, llmProfile, dataSource, query, context, docsSize)
 }
 
 // Translate mocks base method.
-func (m *MockClient) Translate(ctx context.Context, langFrom, langTo string, strings []string) (*TranslateResponse, error) {
+func (m *MockClient) Translate(ctx context.Context, langFrom, langTo string, strings []string) (*string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Translate", ctx, langFrom, langTo, strings)
-	ret0, _ := ret[0].(*TranslateResponse)
+	ret0, _ := ret[0].(*string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

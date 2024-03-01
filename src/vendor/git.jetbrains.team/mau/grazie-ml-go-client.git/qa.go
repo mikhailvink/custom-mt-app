@@ -16,9 +16,10 @@ const (
 	ChatGpt4LlmProfile = "openai-gpt-4"
 )
 
-func (c *client) QuestionAnswering(ctx context.Context, llmProfile string, dataSource string, query string, docsSize int64) (*QuestionAnsweringResponse, error) {
+func (c *client) QuestionAnswering(ctx context.Context, llmProfile string, dataSource string, query string, context string, docsSize int64) (*QuestionAnsweringResponse, error) {
 	request := QuestionAnsweringRequest{
 		Query:      query,
+		Context:    context,
 		Size:       docsSize,
 		DataSource: dataSource,
 		LlmProfile: llmProfile,
@@ -44,6 +45,7 @@ func (c *client) QuestionAnswering(ctx context.Context, llmProfile string, dataS
 
 type QuestionAnsweringRequest struct {
 	Query      string `json:"query"`
+	Context    string `json:"context,omitempty"`
 	Size       int64  `json:"size"`
 	DataSource string `json:"dataSource"`
 	LlmProfile string `json:"llmProfile,omitempty"`

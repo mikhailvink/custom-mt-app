@@ -1,7 +1,7 @@
 module crowdin-grazie
 
 require (
-	git.jetbrains.team/mau/grazie-ml-go-client.git v1.0.3
+	git.jetbrains.team/mau/grazie-ml-go-client.git v1.0.5
 	github.com/golang-jwt/jwt/v4 v4.0.0
 	github.com/gorilla/mux v1.7.0
 	github.com/kelseyhightower/envconfig v1.4.0

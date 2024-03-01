@@ -5,6 +5,6 @@ import "context"
 
 type Client interface {
 	Chat(ctx context.Context, profile string, messages []ChatMessage) (*ChatMessage, error)
-	QuestionAnswering(ctx context.Context, llmProfile string, dataSource string, query string, docsSize int64) (*QuestionAnsweringResponse, error)
-	Translate(ctx context.Context, langFrom string, langTo string, strings []string) (*TranslateResponse, error)
+	QuestionAnswering(ctx context.Context, llmProfile string, dataSource string, query string, context string, docsSize int64) (*QuestionAnsweringResponse, error)
+	Translate(ctx context.Context, taskTag string, langTo string, string string) (string, error)
 }

@@ -1,5 +1,5 @@
-git.jetbrains.team/mau/grazie-ml-go-client.git v1.0.3 h1:9QHbqcVOGClB9hVCimWs5By1TTwv5DmfNlYGGZqPvI0=
-git.jetbrains.team/mau/grazie-ml-go-client.git v1.0.3/go.mod h1:BEmPp37mIJpPC7fkN+LT1m18MTxtLm7+wxQiQWrDz+w=
+git.jetbrains.team/mau/grazie-ml-go-client.git v1.0.5 h1:t19C9hG4td6aZQFMctzf2ghL4lVnO52DO/xBesnuNQw=
+git.jetbrains.team/mau/grazie-ml-go-client.git v1.0.5/go.mod h1:BEmPp37mIJpPC7fkN+LT1m18MTxtLm7+wxQiQWrDz+w=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

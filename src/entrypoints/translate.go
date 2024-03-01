@@ -92,16 +92,17 @@ func (hc *HandlerCreator) TranslateHandler(grazieMlClient graziego.Client, clien
 		if !supportedLanguages[target] || !supportedLanguages[source] {
 			translations = requestBody.Strings
 		} else {
-			translateResponse, err := grazieMlClient.Translate(r.Context(), source, target, requestBody.Strings)
-			if err != nil || translateResponse == nil {
-				logEntry.WithError(err).Error("error translating")
-				hc.httpErrorAndLog(w, fmt.Errorf("error translating: %v", err), http.StatusInternalServerError)
-				return
-			}
+			for _, stringToTranslate := range requestBody.Strings {
+				translateResponse, err := grazieMlClient.Translate(
+					r.Context(), graziego.CrowdinTranslateTag, target, stringToTranslate,
+				)
+				if err != nil {
+					logEntry.WithError(err).Error("error translating")
+					hc.httpErrorAndLog(w, fmt.Errorf("error translating: %v", err), http.StatusInternalServerError)
+					return
+				}
 
-			translations = make([]string, 0, len(translateResponse.Translations))
-			for _, t := range translateResponse.Translations {
-				translations = append(translations, t.Translation)
+				translations = append(translations, translateResponse)
 			}
 		}
 

@@ -98,35 +98,46 @@ type responseLine struct {
 	ErrorMessage string `json:"error_message"`
 }
 
-func parseResponse(response string) (string, error) {
-	lines := strings.Split(response, "\n\n")
-
+func parseChatResponse(response string) ([]string, error) {
+	lines, err := parseResponse(response)
+	if err != nil {
+		return []string{""}, errors.Wrap(err, "cannot parse response")
+	}
 	result := make([]string, 0, len(lines))
 	for _, line := range lines {
-		if !strings.HasPrefix(line, "data: ") {
-			return "", errors.Errorf("unexpected line prefix: %s", line)
-		}
-
-		line = line[6:]
-		if line == "end" {
-			break
-		}
-
 		rLine := &responseLine{}
 		err := json.Unmarshal([]byte(line), rLine)
 		if err != nil {
-			return "", errors.Wrap(err, "cannot unmarshal response line")
+			return []string{""}, errors.Wrap(err, "cannot unmarshal response line")
 		}
 
 		switch rLine.EventType {
 		case eventTypeData:
 			result = append(result, rLine.Current)
 		case eventTypeError:
-			return "", errors.Errorf("server error: %s", rLine.ErrorMessage)
+			return []string{""}, errors.Errorf("server error: %s", rLine.ErrorMessage)
 		default:
-			return "", errors.Errorf("unknown event type: %s", rLine.EventType)
+			return []string{""}, errors.Errorf("unknown event type: %s", rLine.EventType)
 		}
 	}
+	return result, nil
+}
 
-	return strings.Join(result, ""), nil
+func parseResponse(response string) ([]string, error) {
+	lines := strings.Split(response, "\n\n")
+
+	result := make([]string, 0, len(lines))
+	for _, line := range lines {
+		if !strings.HasPrefix(line, "data: ") {
+			return []string{""}, errors.Errorf("unexpected line prefix: %s", line)
+		}
+
+		line = line[6:]
+		if line == "end" {
+			break
+		}
+		result = append(result, line)
+	}
+
+	return result, nil
 }
