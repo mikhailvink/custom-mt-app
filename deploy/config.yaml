@@ -18,7 +18,7 @@ common:
 
 production:
   host: crowdin-grazie-mt.europe-west1-gke.intellij.net
-  client_id: Zp1NMceBZUUcpzFJmanx
+  client_id: ypZx4PgxwQd3n9F8xVBo
   grazie_host: api.app.stgn.grazie.aws.intellij.net
   slack_alerts_channel_id: C031NQTBE73
   grazie_version: production
