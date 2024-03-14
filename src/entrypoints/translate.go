@@ -37,6 +37,13 @@ func (hc *HandlerCreator) TranslateHandler(grazieMlClient graziego.Client, clien
 		query := r.URL.Query()
 		logEntry := logrus.WithField("query", query)
 
+		// ignore requests from the "regular" Crowdin instance
+		projectID := query.Get("project_id")
+		if len(projectID) == 6 {
+			http.Error(w, "requests only from jetbrains.crowdin.com are supported", http.StatusBadRequest)
+			return
+		}
+
 		token := query.Get("jwtToken")
 		parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 			// Don't forget to validate the alg is what you expect:
