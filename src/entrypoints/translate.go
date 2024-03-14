@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"sync"
 
 	graziego "git.jetbrains.team/mau/grazie-ml-go-client.git"
@@ -172,8 +171,4 @@ func (hc *HandlerCreator) TranslateHandler(grazieMlClient graziego.Client, clien
 		}
 		hc.httpSuccess(w, marshalledResponse)
 	}
-}
-
-func getLang(lang string) string {
-	return strings.ToLower(strings.Split(lang, "-")[0])
 }
