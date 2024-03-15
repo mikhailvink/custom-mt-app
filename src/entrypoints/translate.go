@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	batchSize = 10
+	batchSize = 4
 )
 
 type request struct {
@@ -87,6 +87,7 @@ func (hc *HandlerCreator) TranslateHandler(grazieMlClient graziego.Client, clien
 		target := query.Get("target")
 
 		results := make(map[int64][]string, len(requestBody.Strings)/batchSize)
+		var reqError error
 		wg := sync.WaitGroup{}
 		m := sync.Mutex{}
 		number := int64(0)
@@ -106,7 +107,10 @@ func (hc *HandlerCreator) TranslateHandler(grazieMlClient graziego.Client, clien
 				data, err := json.Marshal(batch)
 				if err != nil {
 					logEntry.WithField("strings", batch).Error("failed to marshal strings")
-					hc.httpErrorAndLog(w, fmt.Errorf("failed to marshal strings: %v", err), http.StatusInternalServerError)
+
+					m.Lock()
+					defer m.Unlock()
+					reqError = fmt.Errorf("failed to marshal strings: %v", err)
 					return
 				}
 
@@ -126,7 +130,10 @@ func (hc *HandlerCreator) TranslateHandler(grazieMlClient graziego.Client, clien
 				})
 				if err != nil {
 					logEntry.WithError(err).Error("error translating")
-					hc.httpErrorAndLog(w, fmt.Errorf("error translating: %v", err), http.StatusInternalServerError)
+
+					m.Lock()
+					defer m.Unlock()
+					reqError = fmt.Errorf("error translating: %v", err)
 					return
 				}
 
@@ -137,7 +144,10 @@ func (hc *HandlerCreator) TranslateHandler(grazieMlClient graziego.Client, clien
 				err = json.Unmarshal([]byte(answer), &batchTranslations)
 				if err != nil {
 					logEntry.WithError(err).Error("failed to unmarshal response")
-					hc.httpErrorAndLog(w, fmt.Errorf("failed to unmarshal response: %v", err), http.StatusInternalServerError)
+
+					m.Lock()
+					defer m.Unlock()
+					reqError = fmt.Errorf("failed to unmarshal response: %v", err)
 					return
 				}
 
@@ -150,6 +160,11 @@ func (hc *HandlerCreator) TranslateHandler(grazieMlClient graziego.Client, clien
 		}
 
 		wg.Wait()
+
+		if reqError != nil {
+			hc.httpErrorAndLog(w, reqError, http.StatusInternalServerError)
+			return
+		}
 
 		translations := make([]string, 0, len(requestBody.Strings))
 		number = 0
