@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -27,24 +26,66 @@ const (
 	CrowdinTranslateTag = "llm-crowdin-default"
 )
 
+func (c *client) TranslateWithoutAI(ctx context.Context, langFrom string, langTo string, strings []string) (*TranslateResponse, error) {
+	request := TranslateRequest{
+		Texts:    strings,
+		FromLang: langFrom,
+		ToLang:   langTo,
+	}
+	data, err := json.Marshal(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot marshal request")
+	}
+
+	response, err := c.request(ctx, http.MethodPost, c.buildUrl("/v5/trf/nmt/translate"), bytes.NewReader(data))
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot execute translate request")
+	}
+
+	translateResponse := &TranslateResponse{}
+	err = json.Unmarshal([]byte(response), translateResponse)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot unmarshal response")
+	}
+
+	return translateResponse, nil
+}
+
+type TranslateRequest struct {
+	Texts    []string `json:"texts"`
+	FromLang string   `json:"fromLang"`
+	ToLang   string   `json:"toLang"`
+}
+
+type TranslateResponse struct {
+	Translations []Translation `json:"translations"`
+}
+
+type Translation struct {
+	Text        string `json:"text"`
+	Translation string `json:"translation"`
+	FromLang    string `json:"fromLang"`
+	ToLang      string `json:"toLang"`
+}
+
 func (c *client) Translate(ctx context.Context, taskTag string, langTo string, text string) (string, error) {
-	request := TaskRequest{
+	request := taskRequest{
 		Task: "text-translate:" + taskTag,
-		Parameters: TaskParameters{
+		Parameters: taskParameters{
 			Data: append(make([]interface{}, 0),
-				TaskParameterKey{
+				taskParameterKey{
 					Type: "text",
 					Fqdn: "text",
 				},
-				TaskParameterValue{
+				taskParameterValue{
 					Type:  "text",
 					Value: text,
 				},
-				TaskParameterKey{
+				taskParameterKey{
 					Type: "text",
 					Fqdn: "lang",
 				},
-				TaskParameterValue{
+				taskParameterValue{
 					Type:  "text",
 					Value: langTo,
 				},
@@ -56,48 +97,29 @@ func (c *client) Translate(ctx context.Context, taskTag string, langTo string, t
 		return "", errors.Wrap(err, "cannot marshal request")
 	}
 
-	response, err := c.request(ctx, http.MethodPost, c.buildUrl("/v5/task/stream/v2"), bytes.NewReader(data))
+	response, err := c.requestStream(ctx, http.MethodPost, c.buildUrl("/v5/task/stream/v2"), bytes.NewReader(data))
 	if err != nil {
 		return "", errors.Wrap(err, "cannot execute translate request")
 	}
 
-	parsedResponse, err := parseResponse(response)
-	if err != nil {
-		return "", errors.Wrap(err, "cannot parse response body")
-	}
-
-	translations := make([]string, 0, len(parsedResponse))
-	for _, element := range parsedResponse {
-		responsePart := &TaskResponse{}
-		err := json.Unmarshal([]byte(element), responsePart)
-		if err != nil {
-			return "", err
-		}
-		translations = append(translations, responsePart.Content)
-	}
-
-	return strings.Join(translations, ""), nil
+	return response, nil
 }
 
-type TaskRequest struct {
+type taskRequest struct {
 	Task       string         `json:"task"`
-	Parameters TaskParameters `json:"parameters"`
+	Parameters taskParameters `json:"parameters"`
 }
 
-type TaskParameters struct {
+type taskParameters struct {
 	Data []interface{} `json:"data"`
 }
 
-type TaskParameterKey struct {
+type taskParameterKey struct {
 	Type string `json:"type"`
 	Fqdn string `json:"fqdn"`
 }
 
-type TaskParameterValue struct {
+type taskParameterValue struct {
 	Type  string `json:"type"`
 	Value string `json:"value"`
-}
-
-type TaskResponse struct {
-	Content string `json:"content"`
 }

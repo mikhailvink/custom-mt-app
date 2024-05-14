@@ -5,23 +5,22 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"strings"
 
 	"github.com/pkg/errors"
 )
 
 const (
-	RoleSystem    = "System"
-	RoleAssistant = "Assistant"
-	RoleUser      = "User"
+	TypeSystemMessage    = "system_message"
+	TypeAssistantMessage = "assistant_message"
+	TypeUserMessage      = "user_message"
 
 	ProfileOpenaiGpt4    = "openai-gpt-4"
 	ProfileOpenaiChatGpt = "openai-chat-gpt"
 )
 
 type ChatMessage struct {
-	Role string `json:"role"`
-	Text string `json:"text"`
+	Type    string `json:"type"`
+	Content string `json:"content"`
 }
 
 type chatRequest struct {
@@ -45,18 +44,13 @@ func (c *client) Chat(ctx context.Context, profile string, messages []ChatMessag
 		return nil, errors.Wrap(err, "cannot marshal request")
 	}
 
-	response, err := c.request(ctx, http.MethodPost, c.buildUrl("/v5/llm/chat/stream/v3"), bytes.NewReader(data))
+	response, err := c.requestStream(ctx, http.MethodPost, c.buildUrl("/v5/llm/chat/stream/v6"), bytes.NewReader(data))
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot complete chat messages")
 	}
 
-	parsedResponse, err := parseChatResponse(response)
-	if err != nil {
-		return nil, errors.Wrap(err, "cannot parse response body")
-	}
-
 	return &ChatMessage{
-		Role: RoleAssistant,
-		Text: strings.Join(parsedResponse, ""),
+		Type:    TypeAssistantMessage,
+		Content: response,
 	}, nil
 }
