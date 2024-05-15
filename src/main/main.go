@@ -22,7 +22,7 @@ func main() {
 
 	grazieMlClient, err := graziego.New(
 		cfg.GrazieHost,
-		graziego.AuthTypeService,
+		graziego.AuthTypeApplication,
 		cfg.GrazieToken,
 		graziego.GrazieAgent{
 			Name:    "mau-crowdin-mt",

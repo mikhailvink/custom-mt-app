@@ -6,24 +6,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 
 	graziego "git.jetbrains.team/mau/grazie-ml-go-client.git"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/sirupsen/logrus"
-)
-
-var (
-	supportedLanguages = map[string]bool{
-		graziego.LangEN: true,
-		graziego.LangDE: true,
-		graziego.LangFR: true,
-		graziego.LangES: true,
-		graziego.LangRU: true,
-		graziego.LangKO: true,
-		graziego.LangZH: true,
-		graziego.LangJA: true,
-	}
 )
 
 type request struct {
@@ -45,7 +31,14 @@ func (hc *HandlerCreator) TranslateHandler(grazieMlClient graziego.Client, clien
 		query := r.URL.Query()
 		logEntry := logrus.WithField("query", query)
 
-		token := r.URL.Query().Get("jwtToken")
+		// ignore requests from the "regular" Crowdin instance
+		projectID := query.Get("project_id")
+		if len(projectID) == 6 {
+			http.Error(w, "requests only from jetbrains.crowdin.com are supported", http.StatusBadRequest)
+			return
+		}
+
+		token := query.Get("jwtToken")
 		parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 			// Don't forget to validate the alg is what you expect:
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -86,24 +79,50 @@ func (hc *HandlerCreator) TranslateHandler(grazieMlClient graziego.Client, clien
 
 		logEntry = logEntry.WithField("request", requestBody)
 
-		var translations []string
-		target := getLang(query.Get("target"))
-		source := getLang(query.Get("source"))
-		if !supportedLanguages[target] || !supportedLanguages[source] {
-			translations = requestBody.Strings
-		} else {
-			translateResponse, err := grazieMlClient.TranslateWithoutAI(r.Context(), source, target, requestBody.Strings)
-			if err != nil || translateResponse == nil {
-				logEntry.WithError(err).Error("error translating")
-				hc.httpErrorAndLog(w, fmt.Errorf("error translating: %v", err), http.StatusInternalServerError)
-				return
-			}
+		//target := query.Get("target")
 
-			translations = make([]string, 0, len(translateResponse.Translations))
-			for _, t := range translateResponse.Translations {
-				translations = append(translations, t.Translation)
-			}
-		}
+		//results := make(map[int]string, len(requestBody.Strings))
+		//var reqError error
+		//wg := sync.WaitGroup{}
+		//m := sync.Mutex{}
+		//
+		//for i := 0; i < len(requestBody.Strings); i += 1 {
+		//	wg.Add(1)
+		//	go func(number int, stringToTranslate string) {
+		//		defer wg.Done()
+		//
+		//		translateResponse, err := grazieMlClient.Translate(
+		//			r.Context(), graziego.CrowdinTranslateTag, target, stringToTranslate,
+		//		)
+		//		if err != nil {
+		//			logEntry.WithError(err).Error("error translating")
+		//
+		//			m.Lock()
+		//			defer m.Unlock()
+		//			reqError = fmt.Errorf("error translating: %v", err)
+		//			return
+		//		}
+		//
+		//		m.Lock()
+		//		defer m.Unlock()
+		//		results[number] = translateResponse
+		//	}(i, requestBody.Strings[i])
+		//}
+		//
+		//wg.Wait()
+		//
+		//if reqError != nil {
+		//	hc.httpErrorAndLog(w, reqError, http.StatusInternalServerError)
+		//	return
+		//}
+		//
+		//translations := make([]string, 0, len(requestBody.Strings))
+		//for i := 0; i < len(requestBody.Strings); i += 1 {
+		//	translations = append(translations, results[i])
+		//}
+
+		// TODO" remove mock after setting translation workflow
+		translations := make([]string, len(requestBody.Strings))
 
 		resp := response{
 			Data: responseData{
@@ -118,8 +137,4 @@ func (hc *HandlerCreator) TranslateHandler(grazieMlClient graziego.Client, clien
 		}
 		hc.httpSuccess(w, marshalledResponse)
 	}
-}
-
-func getLang(lang string) string {
-	return strings.ToLower(strings.Split(lang, "-")[0])
 }
