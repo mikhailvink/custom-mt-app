@@ -51,7 +51,8 @@ func (hc *HandlerCreator) TranslateHandler(grazieMlClient graziego.Client, clien
 
 		if err != nil {
 			logEntry.WithError(err).Error("failed to parse JWT")
-			hc.httpErrorAndLog(w, fmt.Errorf("failed to parse JWT: %v", err), http.StatusBadRequest)
+			//hc.httpErrorAndLog(w, fmt.Errorf("failed to parse JWT: %v", err), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		if !parsedToken.Valid {
